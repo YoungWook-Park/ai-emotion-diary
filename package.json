@@ -14,5 +14,9 @@
   "type": "commonjs",
   "devDependencies": {
     "vite": "^8.0.3"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.37.0",
+    "ioredis": "latest"
   }
 }

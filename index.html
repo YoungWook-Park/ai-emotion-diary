@@ -40,8 +40,17 @@
 
         <section class="result-section">
             <h2 class="section-subtitle">AI의 답변</h2>
-            <div id="ai-response-box" class="response-box">
-                <p id="response-text">여기에 AI의 답변이 표시됩니다.</p>
+            <section id="ai-response-box" class="ai-box hidden">
+            <p id="response-text" class="response-content"></p>
+        </section>
+
+        <!-- [New] 일기 히스토리 섹션 -->
+        <hr class="separator">
+        <section class="diary-history">
+            <h2 class="history-title">📅 나의 일기 히스토리</h2>
+            <div id="history-list" class="history-container">
+                <!-- 여기에 카드가 동적으로 추가됩니다 -->
+                <p class="empty-msg">아직 기록된 일기가 없어요. 오늘 하루를 들려주세요!</p>
             </div>
         </section>
     </main>
