@@ -14,12 +14,46 @@
     <div class="background-blob blob-1"></div>
     <div class="background-blob blob-2"></div>
     
-    <main class="container">
+    <!-- [1] 인증 화면 (로그인/회원가입) -->
+    <div id="auth-container" class="container">
+        <header>
+            <h1>AI 감정일기</h1>
+            <p class="subtitle">오늘의 마음을 기록하기 위해 로그인해 주세요.</p>
+        </header>
+
+        <section class="auth-box">
+            <div class="input-group">
+                <input type="email" id="auth-email" placeholder="이메일 주소" required>
+                <input type="password" id="auth-password" placeholder="비밀번호 (6자 이상)" required>
+            </div>
+
+            <div class="button-group auth-btn-group">
+                <button id="login-btn" class="btn btn-primary">로그인</button>
+                <button id="signup-btn" class="btn btn-secondary">회원가입</button>
+            </div>
+
+            <div class="divider">
+                <span>또는</span>
+            </div>
+
+            <button id="google-login-btn" class="btn btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Google로 로그인
+            </button>
+        </section>
+    </div>
+
+    <!-- [2] 일기장 메인 화면 (로그인 후 보임) -->
+    <div id="app-container" class="container hidden">
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
             <span class="icon">🌙</span>
         </button>
         <header>
             <h1 id="main-title">오늘 하루는 어땠나요?</h1>
+            <div id="user-info" class="user-info">
+                <span id="user-email"></span>
+                <button id="logout-btn" class="logout-link">로그아웃</button>
+            </div>
             <p class="subtitle">당신의 소중한 이야기를 AI와 나누어 보세요.</p>
         </header>
 
