@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 감정일기 - 오늘 하루는 어땠나요?</title>
+    <meta name="description" content="AI가 당신의 감정을 분석해주고 소통하는 인공지능 감정 일기 서비스입니다.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-blob blob-1"></div>
+    <div class="background-blob blob-2"></div>
+    
+    <main class="container">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+            <span class="icon">🌙</span>
+        </button>
+        <header>
+            <h1 id="main-title">오늘 하루는 어땠나요?</h1>
+            <p class="subtitle">당신의 소중한 이야기를 AI와 나누어 보세요.</p>
+        </header>
+
+        <section class="diary-section">
+            <div class="input-wrapper">
+                <textarea id="diary-content" placeholder="이곳에 당신의 하루를 자유롭게 적어보세요..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="voice-btn" class="btn btn-secondary">
+                    <span class="icon">🎙️</span> 음성으로 입력하기
+                </button>
+                <button id="analyze-btn" class="btn btn-primary">
+                    <span class="icon">✨</span> 분석하기
+                </button>
+            </div>
+        </section>
+
+        <section class="result-section">
+            <h2 class="section-subtitle">AI의 답변</h2>
+            <div id="ai-response-box" class="response-box">
+                <p id="response-text">여기에 AI의 답변이 표시됩니다.</p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

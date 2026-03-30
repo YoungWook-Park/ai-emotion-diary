@@ -1,0 +1,13 @@
+# API 🔐 키 보호 (이 파일들이 원격 저장소에 올라가지 않도록 함)
+.env
+.env.local
+.env.*.local
+
+# Vite / NPM 관련 폴더
+node_modules/
+dist/
+*.log
+.DS_Store
+
+.vercel
+.env*.local
