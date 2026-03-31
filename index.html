@@ -87,7 +87,40 @@
                 <p class="empty-msg">아직 기록된 일기가 없어요. 오늘 하루를 들려주세요!</p>
             </div>
         </section>
-    </main>
+
+        <!-- [New] 실시간 채팅 섹션 -->
+        <hr class="separator">
+        <section class="chat-section">
+            <h2 class="chat-title">💬 실시간 채팅</h2>
+            
+            <!-- [New] 유저 프로필 섹션 -->
+            <div id="user-profile" class="profile-section">
+                <div class="avatar-wrapper">
+                    <img id="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=placeholder" alt="프로필">
+                    <input type="file" id="avatar-input" accept="image/*" class="hidden">
+                    <div class="avatar-overlay">
+                        <span class="icon">📸</span>
+                    </div>
+                </div>
+                <button id="change-photo-btn" class="text-btn">사진 변경</button>
+            </div>
+
+            <div id="chat-messages" class="chat-messages-container">
+                <!-- 여기에 채팅 메시지가 동적으로 추가됩니다 -->
+                <p class="empty-msg">채팅방에 입장했습니다. 대화를 시작해보세요!</p>
+            </div>
+            <div class="chat-input-wrapper">
+                <input type="file" id="chat-image-input" accept="image/*" class="hidden">
+                <button id="attach-btn" class="icon-btn" title="이미지 첨부">
+                    <span class="icon">📎</span>
+                </button>
+                <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." autocomplete="off">
+                <button id="chat-send-btn" class="icon-btn theme-primary" title="메시지 전송">
+                    <span class="icon">🚀</span>
+                </button>
+            </div>
+        </section>
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>

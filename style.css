@@ -548,3 +548,309 @@ textarea:focus {
     padding: 40px;
     font-style: italic;
 }
+
+/* === [New] 실시간 채팅 스타일 (KakaoTalk Style) === */
+.chat-section {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fade-in-up 0.6s ease forwards;
+}
+
+.chat-title {
+    font-size: 1.5rem;
+    color: var(--text-heavy);
+    font-weight: 700;
+}
+
+.chat-messages-container {
+    background: #bacee0; /* KakaoTalk blue-gray background */
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    height: 450px;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    scroll-behavior: smooth;
+}
+
+[data-theme="dark"] .chat-messages-container {
+    background: #1e1e1e; /* Darker background for dark mode */
+}
+
+/* 메시지 그룹 */
+.message-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.message-meta {
+    font-size: 0.7rem;
+    color: #555;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+[data-theme="dark"] .message-meta {
+    color: #aaa;
+}
+
+/* 말풍선 공통 */
+.message-bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    position: relative;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-break: break-all;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    animation: message-pop 0.2s ease-out;
+}
+
+@keyframes message-pop {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 남이 보낸 메시지 (왼쪽) */
+.message-group.others {
+    align-items: flex-start;
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: white;
+    flex-shrink: 0;
+}
+
+.message-data {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message-bubble-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.message-group.mine .message-bubble-wrapper {
+    flex-direction: row-reverse;
+}
+
+.message-group.others .message-bubble {
+    background: white;
+    color: #333;
+    border-top-left-radius: 2px;
+}
+
+.message-group.others .user-name {
+    font-weight: 600;
+    margin-left: 2px;
+}
+
+/* 내가 보낸 메시지 (오른쪽) */
+.message-group.mine {
+    align-items: flex-end;
+}
+
+.message-group.mine .message-bubble {
+    background: #fee500; /* KakaoTalk Yellow */
+    color: #333;
+    border-top-right-radius: 2px;
+}
+
+.message-group.mine .message-meta {
+    justify-content: flex-end;
+}
+
+.time {
+    font-size: 0.65rem;
+    color: #777;
+    margin-top: auto;
+}
+
+.message-content-wrapper {
+    display: flex;
+    gap: 10px; /* 아바타와 메시지 사이 간격 */
+    align-items: flex-start;
+    max-width: 100%;
+}
+
+.message-group.mine .message-content-wrapper {
+    flex-direction: row-reverse;
+}
+
+
+/* === [New] 유저 프로필 스타일 === */
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    background: var(--container-bg);
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--primary-color);
+    background: #e2e8f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+}
+
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-wrapper:hover {
+    transform: scale(1.05);
+}
+
+.avatar-overlay .icon {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.text-btn:hover {
+    color: var(--primary-hover);
+}
+
+/* === [New] 채팅 전송 이미지 스타일 === */
+.chat-sent-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 12px;
+    margin-top: 4px;
+    cursor: zoom-in;
+    display: block;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+}
+
+.chat-sent-image:hover {
+    transform: scale(1.02);
+}
+
+.error-msg {
+    font-size: 0.85rem;
+    color: #ef4444;
+    font-style: italic;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: block;
+}
+
+/* === [Fix] 채팅 입력창 및 전송 버튼 정렬 === */
+.chat-input-wrapper {
+    display: flex;
+    gap: 8px;
+    background: var(--input-bg);
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.chat-input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+#chat-input {
+    flex: 1;
+    padding: 12px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 1rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.icon-btn:hover {
+    background: var(--bg-main);
+    color: var(--text-heavy);
+    transform: translateY(-2px);
+}
+
+.icon-btn:active {
+    transform: scale(0.92);
+}
+
+.icon-btn.theme-primary {
+    color: var(--primary-color);
+}
+
+.icon-btn.theme-primary:hover {
+    background: rgba(99, 102, 241, 0.1);
+}

@@ -53,6 +53,73 @@ const ApiService = {
             }
         });
         return await res.json();
+    },
+
+    // [New] 채팅 메시지 가져오기 (초기 로딩용)
+    async fetchChatMessages() {
+        const { data, error } = await supabase
+            .from('messages') // [Update] 테이블 명: messages
+            .select('*')
+            .order('created_at', { ascending: true })
+            .limit(50);
+        
+        if (error) throw error;
+        return data;
+    },
+
+    // [New] 채팅 메시지 전송
+    async sendChatMessage(content, user) {
+        const { error } = await supabase
+            .from('messages') // [Update] 테이블 명: messages
+            .insert([
+                { 
+                    content: content, 
+                    user_email: user.email // [Request] 사용자 이메일 저장 (user_id는 자동 입력됨)
+                }
+            ]);
+        
+        if (error) throw error;
+    },
+
+    // [Update] 아바타 업로드 및 메타데이터 저장
+    async uploadAvatar(file, userId) {
+        const filePath = `${userId}/avatar.png`; // [Request] 고유 경로 설정
+        
+        // 1. Storage 업로드
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file, { upsert: true });
+        
+        if (uploadError) throw uploadError;
+
+        // 2. 공개 URL 가져오기
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        // 3. 사용자 메타데이터 업데이트
+        const { error: updateError } = await supabase.auth.updateUser({
+            data: { avatar_url: publicUrl }
+        });
+
+        if (updateError) throw updateError;
+        return publicUrl;
+    },
+
+    // [New] 채팅 이미지 업로드
+    async uploadChatImage(file) {
+        const fileName = `${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage
+            .from('chat-images')
+            .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('chat-images')
+            .getPublicUrl(fileName);
+
+        return publicUrl;
     }
 };
 
@@ -77,7 +144,20 @@ const UIRenderer = {
         aiResponseBox: document.getElementById('ai-response-box'),
         responseText: document.getElementById('response-text'),
         themeToggle: document.getElementById('theme-toggle'),
-        historyList: document.getElementById('history-list')
+        historyList: document.getElementById('history-list'),
+
+        // [New] 채팅 관련 요소
+        chatMessages: document.getElementById('chat-messages'),
+        chatInput: document.getElementById('chat-input'),
+        chatSendBtn: document.getElementById('chat-send-btn'),
+        attachBtn: document.getElementById('attach-btn'),
+        chatImageInput: document.getElementById('chat-image-input'),
+
+        // [New] 프로필 관련 요소
+        userAvatar: document.getElementById('user-avatar'),
+        avatarInput: document.getElementById('avatar-input'),
+        changePhotoBtn: document.getElementById('change-photo-btn'),
+        avatarWrapper: document.querySelector('.avatar-wrapper')
     },
 
     toggleView(isLoggedIn) {
@@ -126,6 +206,71 @@ const UIRenderer = {
             `;
             this.elements.historyList.appendChild(card);
         });
+    },
+
+    // [New] 채팅 메시지 렌더링 (KakaoTalk Style + Avatar)
+    renderChatMessage(msg, currentUserId) {
+        if (!msg || !msg.content) return;
+
+        const emptyMsg = this.elements.chatMessages.querySelector('.empty-msg');
+        if (emptyMsg) emptyMsg.remove();
+
+        // 내 메시지인지 확인
+        const isMine = msg.user_id === currentUserId || msg.user_email === AppState.user?.email;
+        const date = new Date(msg.created_at);
+        const timeStr = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        // [New] 아바타 URL 결정 (기본값 설정)
+        // 실제 운영시에는 messages 테이블에 avatar_url을 저장하거나 별도의 profiles 테이블이 필요합니다.
+        // 여기서는 현재 사용자의 경우 메타데이터를 우선 활용합니다.
+        let avatarUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + msg.user_email;
+        if (isMine && AppState.user?.user_metadata?.avatar_url) {
+            avatarUrl = AppState.user.user_metadata.avatar_url;
+        }
+
+        const groupEl = document.createElement('div');
+        groupEl.className = `message-group ${isMine ? 'mine' : 'others'}`;
+        
+        groupEl.innerHTML = `
+            <div class="message-content-wrapper">
+                ${!isMine ? `<img class="chat-avatar" src="${avatarUrl}" alt="avatar">` : ''}
+                <div class="message-data">
+                    ${!isMine ? `<div class="message-meta"><span class="user-name">${msg.user_email?.split('@')[0] || '익명'}</span></div>` : ''}
+                    <div class="message-bubble-wrapper">
+                        <div class="message-bubble">
+                            ${this.parseMessageContent(msg.content)}
+                        </div>
+                        <span class="time">${timeStr}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.elements.chatMessages.appendChild(groupEl);
+        this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
+    },
+
+    // [New] 메시지 내용 파싱 (이미지 여부 확인)
+    parseMessageContent(content) {
+        const imageRegex = /!\[image\]\((.*?)\)/;
+        const match = content.match(imageRegex);
+
+        if (match) {
+            const imageUrl = match[1];
+            return `<img src="${imageUrl}" class="chat-sent-image" 
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'error-msg\'>이미지를 불러올 수 없습니다.</span>';" 
+                     alt="전송된 이미지">`;
+        }
+        return content;
+    },
+
+    renderChatHistory(messages, currentUserId) {
+        this.elements.chatMessages.innerHTML = '';
+        if (messages.length === 0) {
+            this.elements.chatMessages.innerHTML = '<p class="empty-msg">채팅방에 입장했습니다. 대화를 시작해보세요!</p>';
+            return;
+        }
+        messages.forEach(msg => this.renderChatMessage(msg, currentUserId));
     }
 };
 
@@ -144,9 +289,25 @@ const App = {
             AppState.user = session.user;
             UIRenderer.toggleView(true);
             this.loadInitialData();
+            this.loadAvatar(); // [New] 아바타 로드
+            this.initRealtimeChat(); // [New] 실시간 채팅 구독 시작
         } else {
             AppState.user = null;
             UIRenderer.toggleView(false);
+        }
+    },
+
+    // [New] 아바타 로드 함수
+    async loadAvatar() {
+        if (!AppState.user) return;
+        
+        // [Update] 메타데이터에 있는 URL을 우선 사용
+        const metaUrl = AppState.user.user_metadata?.avatar_url;
+        if (metaUrl) {
+            UIRenderer.elements.userAvatar.src = `${metaUrl}?t=${Date.now()}`;
+        } else {
+            // 없는 경우 기본 이미지
+            UIRenderer.elements.userAvatar.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${AppState.user.email}`;
         }
     },
 
@@ -195,6 +356,38 @@ const App = {
         // 분석 버튼 클릭
         UIRenderer.elements.analyzeBtn.addEventListener('click', () => this.handleAnalyze());
 
+        // [New] 채팅 입력 전송 (버튼 클릭)
+        UIRenderer.elements.chatSendBtn.addEventListener('click', () => this.handleChatSend());
+
+        // [New] 채팅 입력 전송 (Enter 키)
+        UIRenderer.elements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleChatSend();
+        });
+
+        // [New] 이미지 첨부 버튼 클릭
+        UIRenderer.elements.attachBtn.onclick = () => UIRenderer.elements.chatImageInput.click();
+
+        // [New] 이미지 선택 시 처리 (업로드 및 전송)
+        UIRenderer.elements.chatImageInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                // 1. 이미지 업로드
+                const imageUrl = await ApiService.uploadChatImage(file);
+                
+                // 2. 이미지 마크다운 형식으로 메시지 전송
+                const imageMarkdown = `![image](${imageUrl})`;
+                await ApiService.sendChatMessage(imageMarkdown, AppState.user);
+                
+                // 입력창 초기화 (파일 선택 초기화)
+                UIRenderer.elements.chatImageInput.value = '';
+            } catch (err) {
+                console.error('Image Upload Error:', err);
+                alert('이미지 전송 실패: ' + err.message);
+            }
+        };
+
         // 테마 토글 클릭
         UIRenderer.elements.themeToggle.addEventListener('click', () => {
             AppState.theme = AppState.theme === 'dark' ? 'light' : 'dark';
@@ -202,6 +395,68 @@ const App = {
             localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, AppState.theme);
             this.updateThemeIcon();
         });
+
+        // [New] 프로필 사진 변경 클릭
+        UIRenderer.elements.changePhotoBtn.onclick = () => UIRenderer.elements.avatarInput.click();
+        UIRenderer.elements.avatarWrapper.onclick = () => UIRenderer.elements.avatarInput.click();
+
+        // [New] 사진 선택 시 업로드
+        UIRenderer.elements.avatarInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                await ApiService.uploadAvatar(file, AppState.user.id);
+                alert('프로필 사진이 변경되었습니다!');
+                this.loadAvatar(); // 이미지 새로고침
+            } catch (err) {
+                console.error('Upload Error:', err);
+                alert('사진 업로드 실패: ' + err.message);
+            }
+        };
+    },
+
+    // [New] 실시간 채팅 구독 설정 (강화된 버전)
+    initRealtimeChat() {
+        // 1. 기존 메시지 로드 (초기 데이터)
+        ApiService.fetchChatMessages()
+            .then(messages => {
+                UIRenderer.renderChatHistory(messages, AppState.user?.id);
+            })
+            .catch(err => console.error('Chat history Load fail:', err));
+
+        // 2. 실시간 채널 구독
+        const chatChannel = supabase.channel('chat-room');
+        
+        chatChannel
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'messages'
+            }, (payload) => {
+                console.log('새 메시지 도착:', payload.new);
+                UIRenderer.renderChatMessage(payload.new, AppState.user?.id);
+            })
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('실시간 채팅 서버 연결 성공');
+                }
+            });
+    },
+
+    // [New] 채팅 전송 처리
+    async handleChatSend() {
+        const content = UIRenderer.elements.chatInput.value.trim();
+        if (!content) return;
+
+        try {
+            await ApiService.sendChatMessage(content, AppState.user);
+            UIRenderer.elements.chatInput.value = ''; // 성공 시에만 초기화
+            // [참고] Realtime 채널에서 INSERT 이벤트를 감지하여 자동으로 화면에 그려줍니다.
+        } catch (err) {
+            console.error('메시지 전송 실패:', err);
+            alert('메시지 전송 중 오류가 발생했습니다.');
+        }
     },
 
     async handleAnalyze() {
